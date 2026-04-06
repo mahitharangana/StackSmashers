@@ -1,43 +1,47 @@
-const express = require("express");
-const cors = require("cors");
+// server.js
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import OpenAI from "openai";
+
+dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("🔥 Backend is working perfectly!");
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 });
 
-// ✅ MAIN ROUTE (this is missing in your case)
-app.post("/analyze", (req, res) => {
+// POST /analyze endpoint
+app.post("/analyze", async (req, res) => {
   const { symptoms } = req.body;
 
   if (!symptoms) {
-    return res.status(400).json({ error: "No symptoms provided" });
+    return res.status(400).json({ error: "Symptoms missing" });
   }
 
-  let response = {
-    conditions: [],
-    risk: "",
-    advice: ""
-  };
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        { role: "system", content: "You are a helpful medical assistant." },
+        { role: "user", content: `Analyze these symptoms and suggest possible conditions: ${symptoms}` }
+      ]
+    });
 
-  if (symptoms.includes("fever")) {
-    response.conditions.push("Flu", "Viral Infection");
-    response.risk = "Medium";
-    response.advice = "Take rest, stay hydrated, consult a doctor if persists.";
-  } else {
-    response.conditions.push("General Checkup Needed");
-    response.risk = "Low";
-    response.advice = "Monitor symptoms.";
+    const result = response.choices[0].message.content;
+    res.json({ result });
+  } catch (err) {
+    console.error("OpenAI API error:", err.message);
+    res.status(500).json({ error: "AI API error", details: err.message });
   }
-
-  res.json(response);
 });
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
-});
+// Start server
+app.listen(PORT, () => console.log(`🔥 Backend running on port ${PORT}`));
