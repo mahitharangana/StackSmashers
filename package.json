@@ -1,42 +1,21 @@
 {
-  "name": "stacksmashers",
+  "name": "symptocare-backend",
   "version": "1.0.0",
-  "type": "module",
-  "dependencies": {
-    "axios": "^1.14.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.1",
-    "express": "^5.2.1",
-    "openai": "^6.33.0"
-  }
-}
-
-{
-  "name": "stacksmashers",
-  "version": "1.0.0",
-  "description": "",
+  "description": "SymptoCare AI symptom checker backend",
   "main": "server.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mahitharangana/StackSmashers.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/mahitharangana/StackSmashers/issues"
-  },
-  "homepage": "https://github.com/mahitharangana/StackSmashers#readme",
   "dependencies": {
     "axios": "^1.14.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.1",
     "express": "^5.2.1",
     "openai": "^6.33.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }

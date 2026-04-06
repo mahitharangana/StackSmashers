@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SymptoCare — Your Health Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --teal:#089A9E;
+  --teal-dark:#067c80;
+  --teal-glow:rgba(8,154,158,0.25);
+  --navy:#020C1B;
+  --navy2:#0A192F;
+  --surface:rgba(16,33,58,0.65);
+  --border:rgba(255,255,255,0.1);
+  --text:#f0f4ff;
+  --muted:#7a8aaa;
+  --danger:#ef4444;
+  --warn:#eab308;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--navy);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4,h5,.syne{font-family:'Syne',sans-serif}
+
+/* ── BACKGROUND ── */
+.bg-mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+}
+.bg-mesh::before{
+  content:'';position:absolute;width:700px;height:700px;
+  background:radial-gradient(circle,rgba(8,154,158,0.18) 0%,transparent 70%);
+  top:-200px;left:-200px;animation:drift1 20s ease-in-out infinite alternate;
+}
+.bg-mesh::after{
+  content:'';position:absolute;width:500px;height:500px;
+  background:radial-gradient(circle,rgba(2,12,27,0.9) 0%,transparent 70%);
+  bottom:-150px;right:-150px;animation:drift2 25s ease-in-out infinite alternate;
+}
+@keyframes drift1{to{transform:translate(100px,80px)}}
+@keyframes drift2{to{transform:translate(-80px,-60px)}}
+
+/* ── PAGES ── */
+.page{display:none;position:relative;z-index:1;min-height:100vh}
+.page.active{display:flex}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 48px;
+  background:rgba(2,12,27,0.7);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:12px;cursor:pointer}
+.nav-logo .logo-icon{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,var(--teal),#0cc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#fff;box-shadow:0 4px 14px var(--teal-glow);
+}
+.nav-logo span{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.3px}
+.nav-links{display:flex;gap:32px;align-items:center}
+.nav-links a{
+  color:var(--muted);font-size:14px;text-decoration:none;
+  transition:color .2s;cursor:pointer;font-weight:500;
+}
+.nav-links a:hover{color:var(--text)}
+.btn-nav{
+  background:var(--teal);color:#fff;border:none;
+  padding:10px 22px;border-radius:8px;
+  font-family:'Syne',sans-serif;font-weight:600;font-size:14px;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 14px var(--teal-glow);
+}
+.btn-nav:hover{background:var(--teal-dark);transform:translateY(-1px)}
+
+/* ── HERO PAGE ── */
+#page-home{
+  flex-direction:column;align-items:center;justify-content:center;
+  padding-top:90px;text-align:center;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(8,154,158,0.1);border:1px solid rgba(8,154,158,0.3);
+  color:var(--teal);padding:8px 18px;border-radius:100px;
+  font-size:13px;font-weight:500;margin-bottom:32px;
+  animation:fadeUp .6s ease both;
+}
+.hero-title{
+  font-size:clamp(44px,7vw,88px);font-weight:800;
+  line-height:1.0;letter-spacing:-2px;
+  margin-bottom:28px;
+  animation:fadeUp .7s .1s ease both;
+}
+.hero-title .accent{
+  background:linear-gradient(135deg,var(--teal),#0ee);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-size:18px;color:var(--muted);max-width:520px;
+  line-height:1.65;margin-bottom:44px;
+  animation:fadeUp .7s .2s ease both;
+  font-weight:300;
+}
+.hero-btns{
+  display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
+  animation:fadeUp .7s .3s ease both;
+}
+.btn-primary{
+  background:var(--teal);color:#fff;border:none;
+  padding:15px 32px;border-radius:12px;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:15px;
+  cursor:pointer;transition:all .25s;
+  box-shadow:0 6px 24px var(--teal-glow);
+  display:flex;align-items:center;gap:10px;
+}
+.btn-primary:hover{background:var(--teal-dark);transform:translateY(-2px);box-shadow:0 10px 30px var(--teal-glow)}
+.btn-ghost{
+  background:transparent;color:var(--text);
+  border:1px solid var(--border);
+  padding:15px 32px;border-radius:12px;
+  font-family:'Syne',sans-serif;font-weight:600;font-size:15px;
+  cursor:pointer;transition:all .25s;
+  display:flex;align-items:center;gap:10px;
+}
+.btn-ghost:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.3)}
+
+.hero-stats{
+  display:flex;gap:48px;justify-content:center;
+  margin-top:72px;padding-top:48px;
+  border-top:1px solid var(--border);
+  animation:fadeUp .7s .4s ease both;
+  width:100%;max-width:700px;
+}
+.stat-item{text-align:center}
+.stat-num{
+  font-family:'Syne',sans-serif;font-size:32px;font-weight:800;
+  color:var(--teal);display:block;
+}
+.stat-label{font-size:13px;color:var(--muted);font-weight:400}
+
+/* features strip */
+.features-strip{
+  display:flex;gap:24px;margin-top:80px;flex-wrap:wrap;justify-content:center;
+  padding:0 40px 80px;animation:fadeUp .7s .5s ease both;
+}
+.feature-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:28px;width:220px;
+  backdrop-filter:blur(16px);transition:all .3s;text-align:left;
+}
+.feature-card:hover{border-color:rgba(8,154,158,0.4);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.3)}
+.feature-icon{
+  width:44px;height:44px;border-radius:10px;
+  background:rgba(8,154,158,0.12);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--teal);font-size:18px;margin-bottom:16px;
+}
+.feature-card h4{font-size:15px;margin-bottom:8px;font-weight:600}
+.feature-card p{font-size:13px;color:var(--muted);line-height:1.5}
+
+/* ── AUTH PAGES ── */
+.auth-page{
+  align-items:center;justify-content:center;
+  padding-top:90px;flex-direction:column;
+}
+.auth-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:24px;padding:44px;width:100%;max-width:420px;
+  backdrop-filter:blur(24px);
+  box-shadow:0 32px 64px rgba(0,0,0,0.4);
+  animation:fadeUp .5s ease both;
+}
+.auth-logo{text-align:center;margin-bottom:32px}
+.auth-logo .logo-icon{
+  width:64px;height:64px;border-radius:16px;
+  background:linear-gradient(135deg,var(--teal),#0cc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;color:#fff;
+  box-shadow:0 8px 24px var(--teal-glow);
+  margin:0 auto 16px;
+}
+.auth-logo h2{font-size:26px;font-weight:700;letter-spacing:-0.5px}
+.auth-logo p{color:var(--muted);font-size:14px;margin-top:6px}
+.inp-group{margin-bottom:20px;position:relative}
+.inp-group label{display:block;font-size:13px;color:var(--muted);font-weight:500;margin-bottom:8px}
+.inp-group input{
+  width:100%;padding:13px 16px 13px 44px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:12px;color:var(--text);font-size:15px;
+  outline:none;transition:all .3s;font-family:'DM Sans',sans-serif;
+}
+.inp-group input:focus{
+  border-color:var(--teal);background:rgba(255,255,255,0.07);
+  box-shadow:0 0 0 4px rgba(8,154,158,0.12);
+}
+.inp-group input::placeholder{color:rgba(122,138,170,0.5)}
+.inp-icon{position:absolute;bottom:14px;left:15px;color:var(--muted);font-size:15px}
+.auth-opts{display:flex;justify-content:flex-end;margin-bottom:24px}
+.auth-opts a{color:var(--teal);font-size:13px;font-weight:500;text-decoration:none;cursor:pointer}
+.auth-opts a:hover{text-decoration:underline}
+.btn-full{width:100%;padding:14px;border:none;border-radius:12px;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;
+  transition:all .25s;display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-teal{background:var(--teal);color:#fff;box-shadow:0 4px 14px var(--teal-glow);margin-bottom:14px}
+.btn-teal:hover{background:var(--teal-dark);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-outline:hover{background:rgba(255,255,255,0.04);color:var(--text);border-color:rgba(255,255,255,0.25)}
+.divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--muted);font-size:13px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-foot{text-align:center;margin-top:24px;font-size:14px;color:var(--muted)}
+.auth-foot a{color:var(--teal);font-weight:500;text-decoration:none;cursor:pointer}
+
+/* ── DASHBOARD ── */
+#page-dashboard{flex-direction:column;padding-top:72px}
+.dash-header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 40px;
+  background:rgba(2,12,27,0.75);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.dash-logo{display:flex;align-items:center;gap:12px}
+.dash-logo .logo-icon{width:36px;height:36px;border-radius:9px;
+  background:linear-gradient(135deg,var(--teal),#0cc);
+  display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff}
+.dash-logo span{font-family:'Syne',sans-serif;font-weight:700;font-size:17px}
+.dash-actions{display:flex;align-items:center;gap:16px}
+.btn-emergency{
+  background:rgba(239,68,68,0.1);color:#ef4444;
+  border:1px solid rgba(239,68,68,0.35);
+  padding:8px 16px;border-radius:8px;
+  font-size:13px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:8px;transition:all .3s;
+}
+.btn-emergency:hover{background:#ef4444;color:#fff;box-shadow:0 0 16px rgba(239,68,68,0.3)}
+.profile-wrap{position:relative}
+.profile-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(255,255,255,0.06);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:18px;cursor:pointer;transition:all .2s;
+}
+.profile-btn:hover{color:var(--teal);border-color:rgba(8,154,158,0.4)}
+.profile-drop{
+  position:absolute;top:48px;right:0;width:180px;
+  background:#0d1f3c;border:1px solid var(--border);
+  border-radius:12px;padding:6px;
+  box-shadow:0 12px 36px rgba(0,0,0,0.5);
+  opacity:0;visibility:hidden;transform:translateY(-8px);
+  transition:all .2s;z-index:200;
+}
+.profile-drop.open{opacity:1;visibility:visible;transform:translateY(0)}
+.profile-drop button{
+  width:100%;background:transparent;border:none;
+  text-align:left;padding:11px 14px;color:var(--text);
+  font-size:13px;border-radius:8px;cursor:pointer;
+  transition:background .2s;display:flex;align-items:center;gap:10px;
+  font-family:'DM Sans',sans-serif;
+}
+.profile-drop button:hover{background:rgba(255,255,255,0.08)}
+.profile-drop .drop-danger{color:var(--danger)}
+.profile-drop .drop-danger:hover{background:rgba(239,68,68,0.08)}
+
+.dash-main{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:40px 20px 60px;
+}
+.checker-wrap{
+  width:100%;max-width:680px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:24px;padding:40px;
+  backdrop-filter:blur(20px);
+  box-shadow:0 24px 56px rgba(0,0,0,0.35);
+  animation:fadeUp .5s ease both;
+}
+.checker-head{text-align:center;margin-bottom:32px}
+.checker-head h3{
+  font-size:22px;font-weight:700;letter-spacing:-0.3px;
+  display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;
+}
+.checker-head h3 i{color:var(--teal)}
+.checker-head p{color:var(--muted);font-size:14px}
+.form-group{display:flex;flex-direction:column;margin-bottom:18px}
+.form-group label{font-size:13px;font-weight:500;color:var(--muted);margin-bottom:8px}
+.form-group textarea,
+.form-group select{
+  width:100%;padding:12px 16px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  border-radius:12px;color:var(--text);font-size:14px;
+  outline:none;transition:all .3s;font-family:'DM Sans',sans-serif;
+}
+.form-group textarea{resize:vertical;min-height:80px;line-height:1.5}
+.form-group textarea:focus,
+.form-group select:focus{
+  border-color:var(--teal);background:rgba(255,255,255,0.07);
+  box-shadow:0 0 0 4px rgba(8,154,158,0.1);
+}
+.form-group textarea::placeholder{color:rgba(122,138,170,0.45)}
+.form-group select{
+  appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a8aaa' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;background-size:15px;
+}
+.form-group select option{background:#0d1f3c;color:var(--text)}
+.form-row{display:flex;gap:16px}
+.form-row .form-group{flex:1}
+.btn-analyze{
+  width:100%;padding:15px;margin-top:6px;
+  background:linear-gradient(135deg,var(--teal),#0cc);
+  color:#fff;border:none;border-radius:12px;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:15px;
+  cursor:pointer;transition:all .3s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 6px 20px var(--teal-glow);
+}
+.btn-analyze:hover{transform:translateY(-2px);box-shadow:0 10px 30px var(--teal-glow)}
+.btn-analyze:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+#result-box{
+  margin-top:24px;display:none;
+  background:rgba(8,20,40,0.7);border:1px solid var(--border);
+  border-radius:16px;padding:24px;
+  animation:fadeUp .4s ease both;
+}
+.result-header{
+  display:flex;align-items:center;gap:10px;
+  padding-bottom:16px;margin-bottom:16px;
+  border-bottom:1px solid var(--border);
+}
+.result-header i{color:var(--teal);font-size:16px}
+.result-header span{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600}
+.result-body{font-size:14px;line-height:1.8;color:var(--text)}
+.result-body strong{color:var(--teal)}
+.result-foot{
+  margin-top:16px;padding-top:14px;
+  border-top:1px dashed rgba(255,255,255,0.08);
+  font-size:11px;color:rgba(122,138,170,0.55);text-align:center;
+}
+
+/* ── MODALS ── */
+.modal-bg{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(2,12,27,0.6);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;visibility:hidden;transition:all .3s;
+}
+.modal-bg.open{opacity:1;visibility:visible}
+.modal-box{
+  background:#0b1e3a;border:1px solid var(--border);
+  border-radius:24px;padding:40px;
+  max-width:440px;width:90%;text-align:center;
+  box-shadow:0 40px 80px rgba(0,0,0,0.6);
+  transform:scale(.95) translateY(12px);
+  transition:transform .35s cubic-bezier(.16,1,.3,1);
+  position:relative;overflow:hidden;
+}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal)}
+.modal-bg.open .modal-box{transform:scale(1) translateY(0)}
+.modal-icon{font-size:48px;color:var(--warn);margin-bottom:20px;
+  filter:drop-shadow(0 0 12px rgba(234,179,8,.3))}
+.modal-box h3{font-size:22px;font-weight:700;margin-bottom:14px}
+.modal-box p{color:var(--muted);font-size:14px;line-height:1.65;margin-bottom:28px}
+.modal-close{
+  position:absolute;top:18px;right:18px;
+  background:transparent;border:none;color:var(--muted);
+  font-size:18px;cursor:pointer;padding:6px;transition:color .2s;
+}
+.modal-close:hover{color:var(--text)}
+
+/* personal details form modal */
+.form-modal{text-align:left;max-width:500px}
+.form-modal h3,.form-modal p{text-align:center}
+.form-modal p{margin-bottom:22px}
+
+/* emergency modal */
+.modal-danger::before{background:var(--danger)}
+.modal-icon.red{color:var(--danger);filter:drop-shadow(0 0 14px rgba(239,68,68,.4))}
+.h3-danger{color:var(--danger)}
+.emrg-cards{display:flex;gap:14px;margin-bottom:22px;text-align:left}
+.info-card{
+  flex:1;background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);border-radius:12px;padding:16px;
+}
+.info-card h4{font-size:13px;font-weight:600;color:var(--text);
+  display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.info-card h4 i{color:var(--danger)}
+.phone-big{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:var(--danger)}
+.info-card ul{list-style:none;padding:0}
+.info-card ul li{font-size:12px;color:var(--muted);padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,0.05)}
+.info-card ul li:last-child{border-bottom:none}
+.btn-danger{
+  width:100%;padding:14px;background:var(--danger);color:#fff;
+  border:none;border-radius:12px;font-family:'Syne',sans-serif;
+  font-weight:700;font-size:15px;cursor:pointer;transition:all .25s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-danger:hover{background:#dc2626;box-shadow:0 6px 20px rgba(239,68,68,.4)}
+.sos-success{
+  display:none;margin-top:14px;color:#10b981;font-weight:600;font-size:14px;
+  display:none;align-items:center;justify-content:center;gap:8px;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(22px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .8s linear infinite}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  nav{padding:14px 20px}
+  .hero-title{font-size:42px;letter-spacing:-1px}
+  .hero-stats{gap:24px}
+  .features-strip{padding:0 20px 60px}
+  .feature-card{width:100%}
+  .auth-box,.checker-wrap{padding:28px 20px}
+  .form-row{flex-direction:column}
+  .emrg-cards{flex-direction:column}
+  .dash-header{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+
+<!-- ═══════════════════════════════════════════
+     LANDING PAGE
+════════════════════════════════════════════ -->
+<div id="page-home" class="page active">
+  <nav>
+    <div class="nav-logo" onclick="showPage('home')">
+      <div class="logo-icon"><i class="fa-solid fa-stethoscope"></i></div>
+      <span>SymptoCare</span>
+    </div>
+    <div class="nav-links">
+      <a onclick="showPage('login')">Login</a>
+      <a onclick="showPage('signup')">Sign Up</a>
+      <button class="btn-nav" onclick="guestLogin()">Try Free <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </nav>
+
+  <div style="display:flex;flex-direction:column;align-items:center;padding:130px 20px 0;width:100%">
+    <div class="hero-badge">
+      <i class="fa-solid fa-circle-check"></i> AI-Powered Health Assistant
+    </div>
+    <h1 class="hero-title">
+      Know your<br><span class="accent">symptoms.</span><br>Stay informed.
+    </h1>
+    <p class="hero-sub">
+      Describe what you're feeling and get instant AI-guided insights — conditions, care steps, and whether to see a doctor.
+    </p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="showPage('signup')">
+        <i class="fa-solid fa-user-plus"></i> Create Free Account
+      </button>
+      <button class="btn-ghost" onclick="guestLogin()">
+        <i class="fa-regular fa-circle-play"></i> Try as Guest
+      </button>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num">50+</span>
+        <span class="stat-label">Conditions Covered</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">GPT-4</span>
+        <span class="stat-label">AI Powered</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">100%</span>
+        <span class="stat-label">Private & Secure</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="features-strip">
+    <div class="feature-card">
+      <div class="feature-icon"><i class="fa-solid fa-brain"></i></div>
+      <h4>AI Diagnosis</h4>
+      <p>GPT-4 analyzes symptoms and returns structured medical insights instantly.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <h4>History Aware</h4>
+      <p>Accounts for your medical history for more personalized assessments.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="fa-solid fa-truck-medical"></i></div>
+      <h4>Emergency SOS</h4>
+      <p>One tap emergency alert with local helpline and nearby hospital info.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="fa-solid fa-lock"></i></div>
+      <h4>100% Private</h4>
+      <p>Your health data stays on your device. No accounts required to try.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN PAGE
+════════════════════════════════════════════ -->
+<div id="page-login" class="page auth-page">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="logo-icon"><i class="fa-solid fa-stethoscope"></i></div>
+      <h2>Welcome back</h2>
+      <p>Sign in to your SymptoCare account</p>
+    </div>
+
+    <div class="inp-group">
+      <label>Email or Phone</label>
+      <input type="text" id="login-email" placeholder="you@example.com">
+      <i class="fa-regular fa-user inp-icon"></i>
+    </div>
+    <div class="inp-group">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Your password">
+      <i class="fa-solid fa-lock inp-icon"></i>
+    </div>
+    <div class="auth-opts"><a>Forgot password?</a></div>
+
+    <button class="btn-full btn-teal" onclick="doLogin()">
+      <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+    </button>
+    <button class="btn-full btn-outline" onclick="guestLogin()">
+      Continue as Guest <i class="fa-solid fa-arrow-right"></i>
+    </button>
+
+    <p class="auth-foot">Don't have an account? <a onclick="showPage('signup')">Sign up here</a></p>
+    <p class="auth-foot" style="margin-top:8px"><a onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i> Back</a></p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SIGNUP PAGE
+════════════════════════════════════════════ -->
+<div id="page-signup" class="page auth-page">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="logo-icon"><i class="fa-solid fa-stethoscope"></i></div>
+      <h2>Create account</h2>
+      <p>Join SymptoCare for free</p>
+    </div>
+
+    <div class="inp-group">
+      <label>Email or Phone</label>
+      <input type="text" id="su-email" placeholder="you@example.com">
+      <i class="fa-regular fa-user inp-icon"></i>
+    </div>
+    <div class="inp-group">
+      <label>Password</label>
+      <input type="password" id="su-pass" placeholder="Create a strong password">
+      <i class="fa-solid fa-lock inp-icon"></i>
+    </div>
+
+    <button class="btn-full btn-teal" onclick="doSignup()">
+      <i class="fa-solid fa-user-plus"></i> Sign Up
+    </button>
+
+    <div class="divider">or</div>
+
+    <button class="btn-full btn-outline" onclick="guestLogin()" style="background:rgba(255,255,255,0.04);color:var(--text)">
+      <i class="fa-solid fa-arrow-right"></i> Continue as Guest
+    </button>
+
+    <p class="auth-foot">Already have an account? <a onclick="showPage('login')">Login here</a></p>
+    <p class="auth-foot" style="margin-top:8px"><a onclick="showPage('home')"><i class="fa-solid fa-arrow-left"></i> Back</a></p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DASHBOARD
+════════════════════════════════════════════ -->
+<div id="page-dashboard" class="page">
+
+  <header class="dash-header">
+    <div class="dash-logo">
+      <div class="logo-icon"><i class="fa-solid fa-stethoscope"></i></div>
+      <span>SymptoCare</span>
+    </div>
+    <div class="dash-actions">
+      <button class="btn-emergency" onclick="openModal('modal-emergency')">
+        <i class="fa-solid fa-truck-medical"></i> Emergency
+      </button>
+      <div class="profile-wrap">
+        <div class="profile-btn" id="profile-btn">
+          <i class="fa-regular fa-circle-user"></i>
+        </div>
+        <div class="profile-drop" id="profile-drop">
+          <button onclick="openModal('modal-profile'); closeProfileDrop()">
+            <i class="fa-solid fa-id-card"></i> Personal Details
+          </button>
+          <button class="drop-danger" onclick="doLogout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-main">
+    <div class="checker-wrap">
+      <div class="checker-head">
+        <h3><i class="fa-solid fa-stethoscope"></i> Symptom Analysis</h3>
+        <p>Describe your symptoms for an AI-powered health assessment</p>
+      </div>
+
+      <div class="form-group">
+        <label>Your Symptoms</label>
+        <textarea id="symp-input" placeholder="E.g. fever, dry cough, headache, fatigue..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Medical History <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <textarea id="hist-input" placeholder="E.g. diabetes, asthma, hypertension..." style="min-height:60px"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Duration</label>
+          <select id="dur-select">
+            <option value="1">1 day</option>
+            <option value="3">2–3 days</option>
+            <option value="7">1 week+</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Severity</label>
+          <select id="sev-select">
+            <option value="mild">Mild</option>
+            <option value="moderate">Moderate</option>
+            <option value="severe">Severe</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-analyze" id="analyze-btn" onclick="runAnalysis()">
+        <i class="fa-solid fa-microscope"></i> Analyze Symptoms
+      </button>
+
+      <div id="result-box">
+        <div class="result-header">
+          <i class="fa-solid fa-robot"></i>
+          <span>AI Assessment</span>
+        </div>
+        <div class="result-body" id="result-content"></div>
+        <div class="result-foot">⚠️ AI-generated — not a substitute for professional medical advice.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════ -->
+
+<!-- Disclaimer -->
+<div id="modal-disclaimer" class="modal-bg">
+  <div class="modal-box">
+    <div class="modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <h3>Medical Disclaimer</h3>
+    <p>SymptoCare does not replace professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider for medical concerns.</p>
+    <button class="btn-full btn-teal" onclick="acceptDisclaimer()">I Understand — Continue</button>
+  </div>
+</div>
+
+<!-- Personal Details -->
+<div id="modal-profile" class="modal-bg">
+  <div class="modal-box form-modal">
+    <button class="modal-close" onclick="closeModal('modal-profile')"><i class="fa-solid fa-xmark"></i></button>
+    <h3 style="margin-bottom:8px">Personal Details</h3>
+    <p>Help us personalize your experience</p>
+
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="pd-name" placeholder="John Doe" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text);font-size:14px;outline:none;width:100%;font-family:'DM Sans',sans-serif">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Age</label>
+        <input type="number" id="pd-age" placeholder="Years" min="0" max="120" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text);font-size:14px;outline:none;width:100%;font-family:'DM Sans',sans-serif">
+      </div>
+      <div class="form-group">
+        <label>Gender</label>
+        <select id="pd-gender" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text);font-size:14px;outline:none;width:100%;font-family:'DM Sans',sans-serif;appearance:none">
+          <option value="" disabled selected>Select</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+          <option value="pnts">Prefer not to say</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="pd-weight" placeholder="0.0" step="0.1" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text);font-size:14px;outline:none;width:100%;font-family:'DM Sans',sans-serif">
+      </div>
+      <div class="form-group">
+        <label>Height (cm)</label>
+        <input type="number" id="pd-height" placeholder="0" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text);font-size:14px;outline:none;width:100%;font-family:'DM Sans',sans-serif">
+      </div>
+    </div>
+    <button class="btn-full btn-teal" onclick="saveProfile()" style="margin-top:8px">Save Details</button>
+  </div>
+</div>
+
+<!-- Emergency -->
+<div id="modal-emergency" class="modal-bg">
+  <div class="modal-box modal-danger">
+    <button class="modal-close" onclick="closeModal('modal-emergency')"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <h3 class="h3-danger">Emergency Assistance</h3>
+
+    <div class="emrg-cards">
+      <div class="info-card">
+        <h4><i class="fa-solid fa-phone"></i> Helpline</h4>
+        <p class="phone-big">108</p>
+        <a href="tel:108" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin-top:10px;padding:10px;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.35);border-radius:10px;font-size:13px;font-weight:600;transition:all .3s" onmouseover="this.style.background='#10b981';this.style.color='#fff'" onmouseout="this.style.background='rgba(16,185,129,0.1)';this.style.color='#10b981'">
+          <i class="fa-solid fa-phone-volume"></i> Call Now
+        </a>
+      </div>
+      <div class="info-card">
+        <h4><i class="fa-regular fa-hospital"></i> Nearby</h4>
+        <ul>
+          <li>City General (1.2 mi)</li>
+          <li>Mercy Medical (2.5 mi)</li>
+          <li>St. Luke's (3.1 mi)</li>
+        </ul>
+      </div>
+    </div>
+
+    <button class="btn-danger" id="sos-btn" onclick="sendSOS()">
+      <i class="fa-solid fa-bell"></i> Send SOS to Responders
+    </button>
+    <div class="sos-success" id="sos-success">
+      <i class="fa-solid fa-circle-check"></i> Alert and location sent to emergency units!
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────────
+const API_BASE = "http://localhost:5000"; // Change for production
+
+// ── PAGE ROUTING ─────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function guestLogin() {
+  showPage('dashboard');
+  maybeShowDisclaimer();
+}
+
+function doLogin() {
+  const e = document.getElementById('login-email').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (!e || !p) { alert('Please fill in all fields.'); return; }
+  localStorage.setItem('sc_user', e);
+  showPage('dashboard');
+  maybeShowDisclaimer();
+}
+
+function doSignup() {
+  const e = document.getElementById('su-email').value.trim();
+  const p = document.getElementById('su-pass').value;
+  if (!e || !p) { alert('Please fill in all fields.'); return; }
+  localStorage.setItem('sc_user', e);
+  showPage('dashboard');
+  maybeShowDisclaimer();
+}
+
+function doLogout() {
+  localStorage.removeItem('sc_setup');
+  showPage('home');
+}
+
+// ── DISCLAIMER / ONBOARDING ──────────────────────────────────────
+function maybeShowDisclaimer() {
+  if (!localStorage.getItem('sc_setup')) {
+    setTimeout(() => openModal('modal-disclaimer'), 350);
+  }
+}
+
+function acceptDisclaimer() {
+  closeModal('modal-disclaimer');
+  setTimeout(() => openModal('modal-profile'), 450);
+}
+
+function saveProfile() {
+  localStorage.setItem('sc_setup', 'true');
+  closeModal('modal-profile');
+}
+
+// ── MODALS ───────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Profile dropdown
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('profile-btn');
+  const drop = document.getElementById('profile-drop');
+  if (btn) {
+    btn.addEventListener('click', e => { e.stopPropagation(); drop.classList.toggle('open'); });
+    document.addEventListener('click', () => drop.classList.remove('open'));
+  }
+});
+function closeProfileDrop() { document.getElementById('profile-drop').classList.remove('open'); }
+
+// ── SYMPTOM CHECKER ──────────────────────────────────────────────
+async function runAnalysis() {
+  const symptoms = document.getElementById('symp-input').value.trim();
+  const history  = document.getElementById('hist-input').value.trim();
+  const duration = document.getElementById('dur-select').value;
+  const severity = document.getElementById('sev-select').value;
+  const resultBox  = document.getElementById('result-box');
+  const resultBody = document.getElementById('result-content');
+  const btn = document.getElementById('analyze-btn');
+
+  if (!symptoms) {
+    resultBox.style.display = 'block';
+    resultBox.style.borderColor = 'rgba(234,179,8,0.35)';
+    resultBody.innerHTML = '<span style="color:#eab308"><i class="fa-solid fa-triangle-exclamation"></i> Please enter your symptoms first.</span>';
+    document.getElementById('result-box').querySelector('.result-foot').style.display='none';
+    return;
+  }
+
+  // Loading
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Consulting AI...';
+  resultBox.style.display = 'block';
+  resultBox.style.borderColor = 'var(--border)';
+  resultBody.innerHTML = '<span style="color:var(--muted)"><i class="fa-solid fa-circle-notch spin" style="color:var(--teal)"></i> &nbsp;Analyzing your symptoms with GPT-4...</span>';
+  document.getElementById('result-box').querySelector('.result-foot').style.display='block';
+
+  const durMap = { "1":"1 day", "3":"2–3 days", "7":"1 week or more" };
+  const prompt = buildPrompt(symptoms, history, severity, durMap[duration]);
+
+  try {
+    const resp = await fetch(`${API_BASE}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symptoms: prompt })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(()=>({}));
+      throw new Error(err.error || `Server responded with ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    resultBody.innerHTML = formatAI(data.result);
+
+  } catch(err) {
+    resultBox.style.borderColor = 'rgba(239,68,68,0.3)';
+    resultBody.innerHTML = `
+      <span style="color:var(--danger)"><i class="fa-solid fa-circle-exclamation"></i> Could not reach the AI server.</span>
+      <br><br><span style="font-size:13px;color:var(--muted)">
+        Make sure your backend is running at <code style="color:var(--teal)">${API_BASE}</code>.<br>
+        Error: ${err.message}
+      </span>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-microscope"></i> Analyze Symptoms';
+  }
+}
+
+function buildPrompt(symptoms, history, severity, duration) {
+  let p = `Patient symptoms: ${symptoms}\nSeverity: ${severity}\nDuration: ${duration}`;
+  if (history) p += `\nMedical history: ${history}`;
+  p += `\n\nProvide a structured assessment with:
+1. Most likely condition(s)
+2. Recommended home care actions
+3. Over-the-counter medicines if appropriate
+4. Warnings based on severity/duration/history
+5. Whether urgent medical attention is needed
+Keep it clear, concise, and compassionate. End with a brief disclaimer.`;
+  return p;
+}
+
+function formatAI(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^(\d+\.\s)/gm, '<br><strong style="color:var(--teal)">$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
+// ── SOS ──────────────────────────────────────────────────────────
+function sendSOS() {
+  const btn = document.getElementById('sos-btn');
+  const success = document.getElementById('sos-success');
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Broadcasting...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.style.display = 'none';
+    success.style.display = 'flex';
+  }, 1800);
+}
+
+// Reset SOS on close
+document.getElementById('modal-emergency').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeModal('modal-emergency');
+    resetSOS();
+  }
+});
+function resetSOS() {
+  const btn = document.getElementById('sos-btn');
+  btn.style.display = 'flex';
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-bell"></i> Send SOS to Responders';
+  document.getElementById('sos-success').style.display = 'none';
+}
+
+// Close modal on backdrop click
+document.querySelectorAll('.modal-bg').forEach(m => {
+  m.addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this.id);
+  });
+});
+</script>
+</body>
+</html>
