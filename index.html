@@ -349,6 +349,70 @@ nav{
   font-size:11px;color:rgba(122,138,170,0.55);text-align:center;
 }
 
+/* ── DOCTOR RECOMMENDATION ── */
+.doctor-section{
+  margin-top:20px;padding-top:20px;
+  border-top:1px solid var(--border);
+}
+.doctor-section-title{
+  display:flex;align-items:center;gap:10px;
+  font-size:11px;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--muted);font-weight:600;margin-bottom:16px;
+}
+.doctor-section-title i{color:#a78bfa;font-size:14px}
+.doctor-cards{display:flex;flex-direction:column;gap:12px}
+.doctor-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  border-radius:14px;padding:16px;
+  display:flex;align-items:flex-start;gap:14px;
+  transition:all .25s;
+}
+.doctor-card:hover{
+  border-color:rgba(167,139,250,0.35);
+  background:rgba(167,139,250,0.05);
+  transform:translateX(4px);
+}
+.doctor-avatar{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+}
+.doctor-info{flex:1}
+.doctor-info h5{
+  font-size:14px;font-weight:600;color:var(--text);
+  margin-bottom:4px;font-family:'Syne',sans-serif;
+}
+.doctor-info p{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px}
+.doctor-tags{display:flex;flex-wrap:wrap;gap:6px}
+.doctor-tag{
+  font-size:11px;padding:3px 10px;border-radius:100px;
+  background:rgba(8,154,158,0.1);color:var(--teal);
+  border:1px solid rgba(8,154,158,0.2);font-weight:500;
+}
+.hospital-section{margin-top:16px}
+.hospital-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--muted);font-weight:600;margin-bottom:12px;
+}
+.hospital-title i{color:#f59e0b}
+.hospital-list{display:flex;flex-direction:column;gap:8px}
+.hospital-item{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,0.02);border:1px solid var(--border);
+  border-radius:10px;padding:12px 16px;
+}
+.hospital-left{display:flex;align-items:center;gap:10px}
+.hospital-left i{color:#f59e0b;font-size:14px}
+.hospital-name{font-size:13px;font-weight:500;color:var(--text)}
+.hospital-dept{font-size:11px;color:var(--muted);margin-top:2px}
+.hospital-badge{
+  font-size:11px;padding:4px 10px;border-radius:100px;
+  background:rgba(245,158,11,0.1);color:#f59e0b;
+  border:1px solid rgba(245,158,11,0.2);font-weight:500;white-space:nowrap;
+}
+
 /* ── MODALS ── */
 .modal-bg{
   position:fixed;inset:0;z-index:500;
@@ -828,7 +892,7 @@ function closeProfileDrop() { document.getElementById('profile-drop').classList.
 
 // ── SYMPTOM CHECKER ──────────────────────────────────────────────
 async function runAnalysis() {
-  const symptoms = document.getElementById('symp-input').value.trim();
+  const symptoms = document.getElementById('symp-input').value.trim().toLowerCase();
   const history  = document.getElementById('hist-input').value.trim();
   const duration = document.getElementById('dur-select').value;
   const severity = document.getElementById('sev-select').value;
@@ -846,41 +910,90 @@ async function runAnalysis() {
 
   // Loading
   btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Consulting AI...';
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Analyzing...';
   resultBox.style.display = 'block';
   resultBox.style.borderColor = 'var(--border)';
-  resultBody.innerHTML = '<span style="color:var(--muted)"><i class="fa-solid fa-circle-notch spin" style="color:var(--teal)"></i> &nbsp;Analyzing your symptoms with GPT-4...</span>';
+  resultBody.innerHTML = '<span style="color:var(--muted)"><i class="fa-solid fa-circle-notch spin" style="color:var(--teal)"></i> &nbsp;Analyzing your symptoms...</span>';
   document.getElementById('result-box').querySelector('.result-foot').style.display='block';
 
   const durMap = { "1":"1 day", "3":"2–3 days", "7":"1 week or more" };
-  const prompt = buildPrompt(symptoms, history, severity, durMap[duration]);
 
-  try {
-    const resp = await fetch(`${API_BASE}/analyze`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ symptoms: prompt })
-    });
+  // Keyword-based symptom → disease mapping
+  const diseaseDB = {
+  fever: ["Viral Infection", "Malaria", "Dengue", "Typhoid", "Flu", "COVID-19"],
+  headache: ["Migraine", "Tension Headache", "Dehydration", "Sinusitis", "Brain Tumor"],
+  cough: ["Common Cold", "Flu", "Bronchitis", "Pneumonia", "Tuberculosis", "COVID-19"],
+  "sore throat": ["Strep Throat", "Tonsillitis", "Common Cold", "Flu"],
+  nausea: ["Food Poisoning", "Stomach Infection", "Pregnancy", "Gastritis", "Migraine"],
+  vomiting: ["Food Poisoning", "Gastroenteritis", "Appendicitis", "Migraine"],
+  fatigue: ["Anemia", "Thyroid Issues", "Sleep Deprivation", "Diabetes", "Depression"],
+  rash: ["Allergic Reaction", "Chickenpox", "Measles", "Eczema", "Lupus"],
+  diarrhea: ["Food Poisoning", "Gastroenteritis", "IBS", "Cholera"],
+  "chest pain": ["Heart Attack", "Angina", "Pneumonia", "Muscle Strain", "GERD"],
+  "shortness of breath": ["Asthma", "COPD", "Pneumonia", "Heart Failure", "Anxiety"],
+  "joint pain": ["Arthritis", "Gout", "Lupus", "Injury", "Fibromyalgia"],
+  "back pain": ["Muscle Strain", "Herniated Disc", "Osteoporosis"],
+  dizziness: ["Vertigo", "Anemia", "Low Blood Pressure", "Dehydration", "Hypoglycemia"],
+  "weight loss": ["Diabetes", "Thyroid Issues", "Cancer", "Malnutrition"],
+  "weight gain": ["Hypothyroidism", "Lifestyle Issues", "Cushing's Syndrome"],
+  cold: ["Common Cold", "Flu", "Allergic Rhinitis"],
+  "body ache": ["Flu", "Viral Infection", "Fibromyalgia", "Dengue"],
+  "abdominal pain": ["Gastritis", "Appendicitis", "Gallstones", "Ulcer", "Kidney Stones"],
+  swelling: ["Kidney Disease", "Heart Failure", "Allergic Reaction", "Lymphedema"],
+  bleeding: ["Vitamin K Deficiency", "Hemophilia", "Liver Disease", "Platelet Disorders"],
+  anxiety: ["Stress", "Panic Disorder", "Depression"],
+  depression: ["Depression", "Thyroid Issues", "Vitamin D Deficiency"],
+  "red eyes": ["Conjunctivitis", "Allergic Reaction", "Dry Eyes", "Glaucoma"],
+  "blurry vision": ["Cataract", "Glaucoma", "Diabetes", "Migraine"],
+  "eye pain": ["Glaucoma", "Conjunctivitis", "Corneal Abrasion"],
+  "ear pain": ["Otitis Media", "Ear Infection", "Earwax Blockage"],
+  "hearing loss": ["Ear Infection", "Age-related Hearing Loss", "Noise Trauma"],
+  "runny nose": ["Common Cold", "Allergic Rhinitis", "Sinusitis"],
+  sneezing: ["Common Cold", "Allergic Rhinitis", "Flu"],
+  "itchy skin": ["Allergic Reaction", "Eczema", "Scabies", "Psoriasis"],
+  "dark urine": ["Liver Disease", "Dehydration", "Urinary Tract Infection"],
+  "frequent urination": ["Diabetes", "Urinary Tract Infection", "Prostate Issues"],
+  "high blood pressure": ["Hypertension", "Kidney Disease", "Heart Disease"],
+  "low blood pressure": ["Hypotension", "Dehydration", "Heart Problems"],
+  "palpitations": ["Arrhythmia", "Stress", "Thyroid Issues", "Heart Disease"],
+  "numbness": ["Diabetes", "Stroke", "Peripheral Neuropathy", "Vitamin B12 Deficiency"],
+  "tingling": ["Diabetes", "Vitamin B12 Deficiency", "Nerve Compression"],
+  "loss of appetite": ["Depression", "Gastroenteritis", "Cancer", "Thyroid Issues"],
+  "hair loss": ["Thyroid Issues", "Hormonal Imbalance", "Stress", "Alopecia"],
+  "dry mouth": ["Diabetes", "Dehydration", "Medication Side Effects"],
+  "excessive thirst": ["Diabetes", "Dehydration", "Kidney Issues"],
+  "fever with rash": ["Measles", "Chickenpox", "Dengue", "Rubella"]
+};
+  // Small delay to simulate analysis
+  await new Promise(r => setTimeout(r, 500));
 
-    if (!resp.ok) {
-      const err = await resp.json().catch(()=>({}));
-      throw new Error(err.error || `Server responded with ${resp.status}`);
+  let found = false;
+  let response = "<b>Possible conditions based on your symptoms:</b><br>";
+
+  for (let symptom in diseaseDB) {
+    if (symptoms.includes(symptom)) {
+      found = true;
+      response += `- <b>${symptom.charAt(0).toUpperCase() + symptom.slice(1)}</b>: ${diseaseDB[symptom].join(", ")}<br>`;
     }
+  }
 
-    const data = await resp.json();
-    resultBody.innerHTML = formatAI(data.result);
+  if (!found) {
+    response += "- No specific conditions detected. Please consult a doctor for accurate diagnosis.<br>";
+  }
 
-  } catch(err) {
-    resultBox.style.borderColor = 'rgba(239,68,68,0.3)';
-    resultBody.innerHTML = `
-      <span style="color:var(--danger)"><i class="fa-solid fa-circle-exclamation"></i> Could not reach the AI server.</span>
-      <br><br><span style="font-size:13px;color:var(--muted)">
-        Make sure your backend is running at <code style="color:var(--teal)">${API_BASE}</code>.<br>
-        Error: ${err.message}
-      </span>`;
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-microscope"></i> Analyze Symptoms';
+  if (history) response += `<br><b>Medical History:</b> ${history}<br>`;
+  if (severity) response += `<b>Severity:</b> ${severity}<br>`;
+  if (duration) response += `<b>Duration:</b> ${durMap[duration] || duration}<br>`;
+
+  resultBody.innerHTML = response;
+  resultBox.style.borderColor = 'var(--border)';
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-microscope"></i> Analyze Symptoms';
+  resultBox.scrollIntoView({ behavior: 'smooth' });
+
+  // You can still call doctor suggestions here if you have that function
+  if (typeof fetchDoctorRecommendations === "function") {
+    fetchDoctorRecommendations(symptoms, response, resultBody);
   }
 }
 
@@ -897,6 +1010,30 @@ Keep it clear, concise, and compassionate. End with a brief disclaimer.`;
   return p;
 }
 
+function buildDoctorPrompt(symptoms, condition) {
+  return `Based on these symptoms: "${symptoms}" and likely condition: "${condition}", provide a JSON response (no markdown, no backticks, raw JSON only) with this exact structure:
+{
+  "doctors": [
+    {
+      "specialty": "Specialty name",
+      "icon": "fa-solid fa-icon-name",
+      "color": "#hexcolor",
+      "bg": "rgba(r,g,b,0.15)",
+      "reason": "One sentence why this specialist helps",
+      "tags": ["Tag1", "Tag2", "Tag3"]
+    }
+  ],
+  "hospitals": [
+    {
+      "name": "Type of hospital/clinic",
+      "department": "Relevant department name",
+      "priority": "Routine" or "Urgent" or "Emergency"
+    }
+  ]
+}
+Provide 2 relevant doctor specialties and 3 hospital types. Use valid FontAwesome 6 icon names. Colors should match medical context.`;
+}
+
 function formatAI(text) {
   return text
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -905,8 +1042,80 @@ function formatAI(text) {
     .replace(/\n/g, '<br>');
 }
 
+async function fetchDoctorRecommendations(symptoms, aiResult, resultBody) {
+  try {
+    const prompt = buildDoctorPrompt(symptoms, aiResult.substring(0, 300));
+    const resp = await fetch(`${API_BASE}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symptoms: prompt })
+    });
+    const data = await resp.json();
+
+    // Strip any markdown fences just in case
+    const clean = data.result.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    resultBody.innerHTML += renderDoctors(parsed);
+  } catch(e) {
+    // Silently fail — main result is already shown
+    console.warn('Doctor recommendations failed:', e);
+  }
+}
+
+function renderDoctors(data) {
+  const priorityColor = {
+    'Emergency': '#ef4444',
+    'Urgent': '#f59e0b',
+    'Routine': '#10b981'
+  };
+
+  const doctorCards = (data.doctors || []).map(d => `
+    <div class="doctor-card">
+      <div class="doctor-avatar" style="background:${d.bg || 'rgba(8,154,158,0.15)'}">
+        <i class="${d.icon || 'fa-solid fa-user-doctor'}" style="color:${d.color || 'var(--teal)'}"></i>
+      </div>
+      <div class="doctor-info">
+        <h5>${d.specialty}</h5>
+        <p>${d.reason}</p>
+        <div class="doctor-tags">
+          ${(d.tags || []).map(t => `<span class="doctor-tag">${t}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  const hospitalItems = (data.hospitals || []).map(h => `
+    <div class="hospital-item">
+      <div class="hospital-left">
+        <i class="fa-solid fa-hospital"></i>
+        <div>
+          <div class="hospital-name">${h.name}</div>
+          <div class="hospital-dept">${h.department}</div>
+        </div>
+      </div>
+      <span class="hospital-badge" style="color:${priorityColor[h.priority] || '#10b981'};background:${priorityColor[h.priority] || '#10b981'}22;border-color:${priorityColor[h.priority] || '#10b981'}44">
+        ${h.priority}
+      </span>
+    </div>
+  `).join('');
+
+  return `
+    <div class="doctor-section">
+      <div class="doctor-section-title">
+        <i class="fa-solid fa-user-doctor"></i> Recommended Specialists
+      </div>
+      <div class="doctor-cards">${doctorCards}</div>
+
+      <div class="hospital-section" style="margin-top:20px">
+        <div class="hospital-title">
+          <i class="fa-solid fa-hospital"></i> Where to Go
+        </div>
+        <div class="hospital-list">${hospitalItems}</div>
+      </div>
+    </div>
+  `;
+}
 // ── SOS ──────────────────────────────────────────────────────────
-function sendSOS() {
   const btn = document.getElementById('sos-btn');
   const success = document.getElementById('sos-success');
   btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Broadcasting...';
@@ -915,7 +1124,7 @@ function sendSOS() {
     btn.style.display = 'none';
     success.style.display = 'flex';
   }, 1800);
-}
+
 
 // Reset SOS on close
 document.getElementById('modal-emergency').addEventListener('click', function(e) {
